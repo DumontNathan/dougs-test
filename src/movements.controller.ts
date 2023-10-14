@@ -7,7 +7,12 @@ import {
   Post,
 } from '@nestjs/common';
 import { MovementsService } from './movements.service';
-import { MovementsAndBalancesDto } from './movements.dto';
+import {
+  BalanceDTO,
+  MovementDTO,
+  MovementsAndBalancesDTO,
+  ValidationResponseDTO,
+} from './movements.dto';
 import { ValidationResult } from './movements.interface';
 import { WordingMovements } from './wording';
 
@@ -17,12 +22,11 @@ export class MovementsController {
 
   @Post('validation')
   @HttpCode(202)
-  movementsValidation(@Body() movementsAndBalances: MovementsAndBalancesDto): {
-    message: string;
-    reasons?: any[];
-  } {
-    const movements = movementsAndBalances.movements;
-    const balances = movementsAndBalances.balances;
+  movementsValidation(
+    @Body() movementsAndBalances: MovementsAndBalancesDTO,
+  ): ValidationResponseDTO {
+    const movements: MovementDTO[] = movementsAndBalances.movements;
+    const balances: BalanceDTO[] = movementsAndBalances.balances;
 
     if (balances.length < 2) {
       throw new HttpException(

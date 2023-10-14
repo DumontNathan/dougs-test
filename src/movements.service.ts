@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ValidationResult } from './movements.interface';
-import { BalanceDTO, MovementDTO } from './movements.dto';
+import { BalanceDTO, MissingMovementDTO, MovementDTO } from './movements.dto';
 
 @Injectable()
 export class MovementsService {
@@ -8,12 +8,12 @@ export class MovementsService {
     movements: MovementDTO[],
     balances: BalanceDTO[],
   ): ValidationResult {
-    const movementsDuplicates = this.checkDuplicates(movements);
+    const movementsDuplicates: MovementDTO[] = this.checkDuplicates(movements);
 
     if (movementsDuplicates.length) {
-      const filteredMovements = this.filterDuplicates(movements);
+      const filteredMovements: MovementDTO[] = this.filterDuplicates(movements);
 
-      const missingMovements = this.checkMissingMovements(
+      const missingMovements: MissingMovementDTO[] = this.checkMissingMovements(
         filteredMovements,
         balances,
       );
@@ -32,7 +32,10 @@ export class MovementsService {
       return validation;
     }
 
-    const missingMovements = this.checkMissingMovements(movements, balances);
+    const missingMovements: MissingMovementDTO[] = this.checkMissingMovements(
+      movements,
+      balances,
+    );
 
     if (missingMovements.length) {
       return {
@@ -60,7 +63,7 @@ export class MovementsService {
 
   private filterDuplicates(movements: MovementDTO[]) {
     const seen = {};
-    return movements.filter((movement) => {
+    return movements.filter((movement: MovementDTO) => {
       if (seen[movement.id]) {
         return false;
       }
@@ -72,21 +75,22 @@ export class MovementsService {
   private checkMissingMovements(
     cleanMovements: MovementDTO[],
     balances: BalanceDTO[],
-  ) {
-    const totalMovementByPeriods = [];
+  ): MissingMovementDTO[] {
+    const totalMovementByPeriods: MissingMovementDTO[] = [];
 
     for (let i = 0; i < balances.length - 1; i++) {
       totalMovementByPeriods.push({
         startDate: balances[i].date,
         endDate: balances[i + 1].date,
-        totalMovement: balances[i + 1].balance - balances[i].balance,
+        actualTotalMovement: balances[i + 1].balance - balances[i].balance,
         observedTotalMovement: 0,
       });
     }
 
-    cleanMovements.forEach((movement) => {
-      totalMovementByPeriods.forEach((period) => {
+    cleanMovements.forEach((movement: MovementDTO) => {
+      totalMovementByPeriods.forEach((period: MissingMovementDTO) => {
         if (
+          // enlever new Date
           new Date(movement.date) >= new Date(period.startDate) &&
           new Date(movement.date) < new Date(period.endDate)
         ) {
@@ -97,7 +101,7 @@ export class MovementsService {
 
     return totalMovementByPeriods.filter(
       (periodItem) =>
-        periodItem.totalMovement !== periodItem.observedTotalMovement,
+        periodItem.actualTotalMovement !== periodItem.observedTotalMovement,
     );
   }
 
@@ -108,7 +112,7 @@ export class MovementsService {
     };
   }
 
-  private setMissingMovementsReason(missingMovements: any[]) {
+  private setMissingMovementsReason(missingMovements: MissingMovementDTO[]) {
     return {
       reason: 'missing',
       missingMovements: missingMovements,
