@@ -1,22 +1,36 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpException,
+  HttpStatus,
+  Post,
+} from '@nestjs/common';
 import { MovementsService } from './movements.service';
-import { MovementsAndBalances } from './movement.interface';
+import { MovementsAndBalancesDto } from './movements.dto';
 
 @Controller('movements')
 export class MovementsController {
   constructor(private readonly movementsService: MovementsService) {}
 
-  @Get('hello')
-  getHello(): string {
-    return this.movementsService.getHello();
-  }
-
   @Post('validation')
-  getMovementsValidation(
-    @Body() movementsAndBalances: MovementsAndBalances,
-  ): string {
-    console.log(movementsAndBalances);
+  @HttpCode(202)
+  movementsValidation(@Body() movementsAndBalances: MovementsAndBalancesDto): {
+    message: string;
+    reasons?: any[];
+  } {
+    const movementsValidation =
+      this.movementsService.checkIfMovementsAreValids(movementsAndBalances);
 
-    return 'Les mouvements ont été validés avec succès.';
+    if (movementsValidation.isValid) {
+      return { message: 'Accepted' };
+    }
+    throw new HttpException(
+      {
+        message: "I'm a teapot",
+        reasons: movementsValidation.reasons,
+      },
+      HttpStatus.I_AM_A_TEAPOT,
+    );
   }
 }
