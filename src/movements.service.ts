@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ValidationResult } from './movements.interface';
 import { BalanceDTO, MissingMovementDTO, MovementDTO } from './movements.dto';
+import { WordingMovements } from './wording';
 
 @Injectable()
 export class MovementsService {
@@ -107,14 +108,14 @@ export class MovementsService {
 
   private setDuplicatesReason(movementsDuplicates: MovementDTO[]) {
     return {
-      reason: 'duplicates',
+      reason: WordingMovements.duplicates,
       duplicates: movementsDuplicates,
     };
   }
 
   private setMissingMovementsReason(missingMovements: MissingMovementDTO[]) {
     return {
-      reason: 'missing',
+      reason: WordingMovements.missing,
       missingMovements: missingMovements,
     };
   }
