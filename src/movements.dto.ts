@@ -1,4 +1,10 @@
-import { IsArray, IsDate, IsString, ValidateNested } from 'class-validator';
+import {
+  IsArray,
+  IsDate,
+  IsNumber,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class MovementDTO {
@@ -11,16 +17,16 @@ export class MovementDTO {
   @IsString()
   label: string;
 
-  @IsString()
-  amount: string;
+  @IsNumber()
+  amount: number;
 }
 
 export class BalanceDTO {
   @IsDate()
   date: Date;
 
-  @IsString()
-  balance: string;
+  @IsNumber()
+  balance: number;
 }
 
 export class MovementsAndBalancesDto {
