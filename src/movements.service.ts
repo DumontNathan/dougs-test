@@ -1,20 +1,25 @@
 import { Injectable } from '@nestjs/common';
-import { ValidationResult } from './movements.interface';
-import { BalanceDTO, MissingMovementDTO, MovementDTO } from './movements.dto';
+import {
+  Balance,
+  MissingMovement,
+  Movement,
+  Reason,
+  ValidationResult,
+} from './movements.interface';
 import { WordingMovements } from './wording';
 
 @Injectable()
 export class MovementsService {
   checkIfMovementsAreValids(
-    movements: MovementDTO[],
-    balances: BalanceDTO[],
+    movements: Movement[],
+    balances: Balance[],
   ): ValidationResult {
-    const movementsDuplicates: MovementDTO[] = this.checkDuplicates(movements);
+    const movementsDuplicates: Movement[] = this.checkDuplicates(movements);
 
     if (movementsDuplicates.length) {
-      const filteredMovements: MovementDTO[] = this.filterDuplicates(movements);
+      const filteredMovements: Movement[] = this.filterDuplicates(movements);
 
-      const missingMovements: MissingMovementDTO[] = this.checkMissingMovements(
+      const missingMovements: MissingMovement[] = this.checkMissingMovements(
         filteredMovements,
         balances,
       );
@@ -33,7 +38,7 @@ export class MovementsService {
       return validation;
     }
 
-    const missingMovements: MissingMovementDTO[] = this.checkMissingMovements(
+    const missingMovements: MissingMovement[] = this.checkMissingMovements(
       movements,
       balances,
     );
@@ -48,9 +53,9 @@ export class MovementsService {
     return { isValid: true };
   }
 
-  private checkDuplicates(movements: MovementDTO[]) {
+  private checkDuplicates(movements: Movement[]): Movement[] {
     const seen = {};
-    const duplicates: MovementDTO[] = [];
+    const duplicates: Movement[] = [];
 
     for (const movement of movements) {
       if (seen[movement.id]) {
@@ -62,9 +67,9 @@ export class MovementsService {
     return duplicates;
   }
 
-  private filterDuplicates(movements: MovementDTO[]) {
+  private filterDuplicates(movements: Movement[]): Movement[] {
     const seen = {};
-    return movements.filter((movement: MovementDTO) => {
+    return movements.filter((movement: Movement) => {
       if (seen[movement.id]) {
         return false;
       }
@@ -74,10 +79,10 @@ export class MovementsService {
   }
 
   private checkMissingMovements(
-    cleanMovements: MovementDTO[],
-    balances: BalanceDTO[],
-  ): MissingMovementDTO[] {
-    const totalMovementByPeriods: MissingMovementDTO[] = [];
+    cleanMovements: Movement[],
+    balances: Balance[],
+  ): MissingMovement[] {
+    const totalMovementByPeriods: MissingMovement[] = [];
 
     for (let i = 0; i < balances.length - 1; i++) {
       totalMovementByPeriods.push({
@@ -88,8 +93,8 @@ export class MovementsService {
       });
     }
 
-    cleanMovements.forEach((movement: MovementDTO) => {
-      totalMovementByPeriods.forEach((period: MissingMovementDTO) => {
+    cleanMovements.forEach((movement: Movement) => {
+      totalMovementByPeriods.forEach((period: MissingMovement) => {
         if (
           // enlever new Date
           new Date(movement.date) >= new Date(period.startDate) &&
@@ -106,14 +111,16 @@ export class MovementsService {
     );
   }
 
-  private setDuplicatesReason(movementsDuplicates: MovementDTO[]) {
+  private setDuplicatesReason(movementsDuplicates: Movement[]): Reason {
     return {
       reason: WordingMovements.duplicates,
       duplicates: movementsDuplicates,
     };
   }
 
-  private setMissingMovementsReason(missingMovements: MissingMovementDTO[]) {
+  private setMissingMovementsReason(
+    missingMovements: MissingMovement[],
+  ): Reason {
     return {
       reason: WordingMovements.missing,
       missingMovements: missingMovements,

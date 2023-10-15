@@ -8,12 +8,10 @@ import {
 } from '@nestjs/common';
 import { MovementsService } from './movements.service';
 import {
-  BalanceDTO,
-  MovementDTO,
   MovementsAndBalancesDTO,
   ValidationResponseDTO,
 } from './movements.dto';
-import { ValidationResult } from './movements.interface';
+import { Balance, Movement, ValidationResult } from './movements.interface';
 import { WordingMovements } from './wording';
 
 @Controller('movements')
@@ -25,8 +23,8 @@ export class MovementsController {
   movementsValidation(
     @Body() movementsAndBalances: MovementsAndBalancesDTO,
   ): ValidationResponseDTO {
-    const movements: MovementDTO[] = movementsAndBalances.movements;
-    const balances: BalanceDTO[] = movementsAndBalances.balances;
+    const movements: Movement[] = movementsAndBalances.movements;
+    const balances: Balance[] = movementsAndBalances.balances;
 
     if (balances.length < 2) {
       throw new HttpException(

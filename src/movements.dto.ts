@@ -1,73 +1,17 @@
-import {
-  IsArray,
-  IsDate,
-  IsNumber,
-  IsString,
-  ValidateNested,
-} from 'class-validator';
+import { IsArray, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
-
-export class MovementDTO {
-  @IsString()
-  id: string;
-
-  @IsDate()
-  date: Date;
-
-  @IsString()
-  label: string;
-
-  @IsNumber()
-  amount: number;
-}
-
-export class BalanceDTO {
-  @IsDate()
-  date: Date;
-
-  @IsNumber()
-  balance: number;
-}
+import { Balance, Movement, Reason } from './movements.interface';
 
 export class MovementsAndBalancesDTO {
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => MovementDTO)
-  movements: MovementDTO[];
+  @Type(() => Movement)
+  movements: Movement[];
 
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => BalanceDTO)
-  balances: BalanceDTO[];
-}
-
-export class MissingMovementDTO {
-  @IsDate()
-  startDate: Date;
-
-  @IsDate()
-  endDate: Date;
-
-  @IsNumber()
-  actualTotalMovement: number;
-
-  @IsNumber()
-  observedTotalMovement: number;
-}
-
-export class ReasonDTO {
-  @IsString()
-  reason: string;
-
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => MovementDTO)
-  duplicates?: MovementDTO[];
-
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => MissingMovementDTO)
-  missingMovements?: MissingMovementDTO[];
+  @Type(() => Balance)
+  balances: Balance[];
 }
 
 export class ValidationResponseDTO {
@@ -76,6 +20,6 @@ export class ValidationResponseDTO {
 
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => ReasonDTO)
-  reasons?: ReasonDTO[];
+  @Type(() => Reason)
+  reasons?: Reason[];
 }
