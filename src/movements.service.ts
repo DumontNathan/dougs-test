@@ -78,11 +78,13 @@ export class MovementsService {
     });
   }
 
+  // Improvement : handle cases when movements are not in balances periods.
   private checkMissingMovements(
     cleanMovements: Movement[],
     balances: Balance[],
   ): MissingMovement[] {
     const totalMovementByPeriods: MissingMovement[] = [];
+    balances = this.sortBalancesAsc(balances);
 
     for (let i = 0; i < balances.length - 1; i++) {
       totalMovementByPeriods.push({
@@ -96,7 +98,6 @@ export class MovementsService {
     cleanMovements.forEach((movement: Movement) => {
       totalMovementByPeriods.forEach((period: MissingMovement) => {
         if (
-          // enlever new Date
           new Date(movement.date) >= new Date(period.startDate) &&
           new Date(movement.date) < new Date(period.endDate)
         ) {
@@ -125,5 +126,11 @@ export class MovementsService {
       reason: WordingMovements.missing,
       missingMovements: missingMovements,
     };
+  }
+
+  private sortBalancesAsc(balances): Balance[] {
+    return balances.sort((a: Balance, b: Balance) => {
+      return new Date(a.date).getTime() - new Date(b.date).getTime();
+    });
   }
 }
