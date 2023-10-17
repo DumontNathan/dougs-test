@@ -61,4 +61,9 @@ export class Reason {
   @ValidateNested({ each: true })
   @Type(() => MissingMovement)
   missingMovements?: MissingMovement[];
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => Movement)
+  notInPeriod?: Movement[];
 }

@@ -14,6 +14,24 @@ export class MovementsService {
     movements: Movement[],
     balances: Balance[],
   ): ValidationResult {
+    balances = this.movementsUtils.sortBalancesAsc(balances);
+
+    const movementsNotInPeriod = this.movementsUtils.findMovementsNotInPeriod(
+      balances,
+      movements,
+    );
+
+    if (movementsNotInPeriod.length) {
+      return {
+        isValid: false,
+        reasons: [
+          this.movementsUtils.setMovementsNotInPeriodReason(
+            movementsNotInPeriod,
+          ),
+        ],
+      };
+    }
+
     const movementsDuplicates: Movement[] =
       this.movementsUtils.checkMovementsDuplicates(movements);
 

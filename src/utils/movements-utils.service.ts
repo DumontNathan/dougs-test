@@ -9,6 +9,19 @@ import { WordingMovements } from '../wording';
 
 @Injectable()
 export class MovementsUtilsService {
+  findMovementsNotInPeriod(
+    balances: Balance[],
+    movements: Movement[],
+  ): Movement[] {
+    const startDate = new Date(balances[0].date);
+    const endDate = new Date(balances[balances.length - 1].date);
+
+    return movements.filter(
+      (movement) =>
+        new Date(movement.date) < startDate ||
+        new Date(movement.date) > endDate,
+    );
+  }
   checkMovementsDuplicates(movements: Movement[]): Movement[] {
     const seen = {};
     const duplicates: Movement[] = [];
@@ -65,7 +78,14 @@ export class MovementsUtilsService {
     };
   }
 
-  private sortBalancesAsc(balances): Balance[] {
+  setMovementsNotInPeriodReason(movementsNotInPeriod: Movement[]): Reason {
+    return {
+      reason: WordingMovements.notInPeriod,
+      notInPeriod: movementsNotInPeriod,
+    };
+  }
+
+  sortBalancesAsc(balances): Balance[] {
     return balances.sort((a: Balance, b: Balance) => {
       return new Date(a.date).getTime() - new Date(b.date).getTime();
     });
