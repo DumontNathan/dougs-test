@@ -3,134 +3,53 @@ import {
   Balance,
   MissingMovement,
   Movement,
-  Reason,
   ValidationResult,
 } from './movements.interface';
-import { WordingMovements } from './wording';
+import { MovementsUtilsService } from './utils/movements-utils.service';
 
 @Injectable()
 export class MovementsService {
+  constructor(private movementsUtils: MovementsUtilsService) {}
   checkIfMovementsAreValids(
     movements: Movement[],
     balances: Balance[],
   ): ValidationResult {
-    const movementsDuplicates: Movement[] = this.checkDuplicates(movements);
+    const movementsDuplicates: Movement[] =
+      this.movementsUtils.checkMovementsDuplicates(movements);
 
     if (movementsDuplicates.length) {
-      const filteredMovements: Movement[] = this.filterDuplicates(movements);
+      const filteredMovements: Movement[] =
+        this.movementsUtils.filterMovementsDuplicates(movements);
 
-      const missingMovements: MissingMovement[] = this.checkMissingMovements(
-        filteredMovements,
-        balances,
-      );
+      const missingMovements: MissingMovement[] =
+        this.movementsUtils.checkMissingMovements(filteredMovements, balances);
 
       const validation: ValidationResult = {
         isValid: false,
-        reasons: [this.setDuplicatesReason(movementsDuplicates)],
+        reasons: [this.movementsUtils.setDuplicatesReason(movementsDuplicates)],
       };
 
       if (missingMovements.length) {
         validation.reasons.push(
-          this.setMissingMovementsReason(missingMovements),
+          this.movementsUtils.setMissingMovementsReason(missingMovements),
         );
       }
 
       return validation;
     }
 
-    const missingMovements: MissingMovement[] = this.checkMissingMovements(
-      movements,
-      balances,
-    );
+    const missingMovements: MissingMovement[] =
+      this.movementsUtils.checkMissingMovements(movements, balances);
 
     if (missingMovements.length) {
       return {
         isValid: false,
-        reasons: [this.setMissingMovementsReason(missingMovements)],
+        reasons: [
+          this.movementsUtils.setMissingMovementsReason(missingMovements),
+        ],
       };
     }
 
     return { isValid: true };
-  }
-
-  private checkDuplicates(movements: Movement[]): Movement[] {
-    const seen = {};
-    const duplicates: Movement[] = [];
-
-    for (const movement of movements) {
-      if (seen[movement.id]) {
-        duplicates.push(movement);
-      } else {
-        seen[movement.id] = true;
-      }
-    }
-    return duplicates;
-  }
-
-  private filterDuplicates(movements: Movement[]): Movement[] {
-    const seen = {};
-    return movements.filter((movement: Movement) => {
-      if (seen[movement.id]) {
-        return false;
-      }
-      seen[movement.id] = true;
-      return true;
-    });
-  }
-
-  // Improvement : handle cases when movements are not in balances periods.
-  private checkMissingMovements(
-    cleanMovements: Movement[],
-    balances: Balance[],
-  ): MissingMovement[] {
-    const totalMovementByPeriods: MissingMovement[] = [];
-    balances = this.sortBalancesAsc(balances);
-
-    for (let i = 0; i < balances.length - 1; i++) {
-      totalMovementByPeriods.push({
-        startDate: balances[i].date,
-        endDate: balances[i + 1].date,
-        actualTotalMovement: balances[i + 1].balance - balances[i].balance,
-        observedTotalMovement: 0,
-      });
-    }
-
-    cleanMovements.forEach((movement: Movement) => {
-      totalMovementByPeriods.forEach((period: MissingMovement) => {
-        if (
-          new Date(movement.date) >= new Date(period.startDate) &&
-          new Date(movement.date) < new Date(period.endDate)
-        ) {
-          period.observedTotalMovement += movement.amount;
-        }
-      });
-    });
-
-    return totalMovementByPeriods.filter(
-      (periodItem) =>
-        periodItem.actualTotalMovement !== periodItem.observedTotalMovement,
-    );
-  }
-
-  private setDuplicatesReason(movementsDuplicates: Movement[]): Reason {
-    return {
-      reason: WordingMovements.duplicates,
-      duplicates: movementsDuplicates,
-    };
-  }
-
-  private setMissingMovementsReason(
-    missingMovements: MissingMovement[],
-  ): Reason {
-    return {
-      reason: WordingMovements.missing,
-      missingMovements: missingMovements,
-    };
-  }
-
-  private sortBalancesAsc(balances): Balance[] {
-    return balances.sort((a: Balance, b: Balance) => {
-      return new Date(a.date).getTime() - new Date(b.date).getTime();
-    });
   }
 }
