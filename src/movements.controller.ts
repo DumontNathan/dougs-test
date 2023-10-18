@@ -41,6 +41,7 @@ export class MovementsController {
     if (movementsValidation.isValid) {
       return { message: WordingMovements.accepted };
     }
+
     throw new HttpException(
       {
         message: WordingMovements.teapot,
