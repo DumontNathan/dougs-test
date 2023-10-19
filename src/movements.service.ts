@@ -14,6 +14,13 @@ export class MovementsService {
     movements: Movement[],
     balances: Balance[],
   ): ValidationResult {
+    // We need at least 2 balances in order to compare the amount with the movements
+    if (balances.length < 2) {
+      return this.movementsUtils.setValidationResult(false, [
+        this.movementsUtils.setTwoBalancesMinReason(),
+      ]);
+    }
+
     balances = this.movementsUtils.sortBalancesAsc(balances);
 
     const movementsNotInPeriod = this.movementsUtils.findMovementsNotInPeriod(
@@ -22,14 +29,9 @@ export class MovementsService {
     );
 
     if (movementsNotInPeriod.length) {
-      return {
-        isValid: false,
-        reasons: [
-          this.movementsUtils.setMovementsNotInPeriodReason(
-            movementsNotInPeriod,
-          ),
-        ],
-      };
+      return this.movementsUtils.setValidationResult(false, [
+        this.movementsUtils.setMovementsNotInPeriodReason(movementsNotInPeriod),
+      ]);
     }
 
     const movementsDuplicates: Movement[] =
@@ -42,10 +44,10 @@ export class MovementsService {
       const missingMovements: MissingMovement[] =
         this.movementsUtils.checkMissingMovements(filteredMovements, balances);
 
-      const validation: ValidationResult = {
-        isValid: false,
-        reasons: [this.movementsUtils.setDuplicatesReason(movementsDuplicates)],
-      };
+      const validation: ValidationResult =
+        this.movementsUtils.setValidationResult(false, [
+          this.movementsUtils.setDuplicatesReason(movementsDuplicates),
+        ]);
 
       if (missingMovements.length) {
         validation.reasons.push(
@@ -60,12 +62,9 @@ export class MovementsService {
       this.movementsUtils.checkMissingMovements(movements, balances);
 
     if (missingMovements.length) {
-      return {
-        isValid: false,
-        reasons: [
-          this.movementsUtils.setMissingMovementsReason(missingMovements),
-        ],
-      };
+      return this.movementsUtils.setValidationResult(false, [
+        this.movementsUtils.setMissingMovementsReason(missingMovements),
+      ]);
     }
 
     return { isValid: true };

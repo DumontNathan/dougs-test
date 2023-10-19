@@ -4,6 +4,7 @@ import {
   MissingMovement,
   Movement,
   Reason,
+  ValidationResult,
 } from '../movements.interface';
 import { WordingMovements } from '../wording';
 
@@ -36,6 +37,12 @@ export class MovementsUtilsService {
     return duplicates;
   }
 
+  setTwoBalancesMinReason(): Reason {
+    return {
+      reason: WordingMovements.twoBalancesMin,
+    };
+  }
+
   filterMovementsDuplicates(movements: Movement[]): Movement[] {
     const seen = {};
     return movements.filter((movement: Movement) => {
@@ -47,7 +54,6 @@ export class MovementsUtilsService {
     });
   }
 
-  // Improvement : handle cases when movements are not in balances periods.
   checkMissingMovements(
     cleanMovements: Movement[],
     balances: Balance[],
@@ -89,6 +95,10 @@ export class MovementsUtilsService {
     return balances.sort((a: Balance, b: Balance) => {
       return new Date(a.date).getTime() - new Date(b.date).getTime();
     });
+  }
+
+  setValidationResult(isValid: boolean, reasons: Reason[]): ValidationResult {
+    return { isValid: isValid, reasons: reasons };
   }
 
   private calculateTotalMovementByPeriods(
